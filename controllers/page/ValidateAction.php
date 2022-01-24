@@ -27,7 +27,7 @@ class ValidateAction extends PsrAction
 
     /**
      * @return array
-     * @throws InvalidConfigException
+     * @throws InvalidConfigException|ReflectionException
      */
     public function run(): array
     {
