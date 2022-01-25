@@ -2,12 +2,8 @@
 
 namespace app\components;
 
-use Yii;
-use Phly\Http\ServerRequestFactory;
 use Psr\Http\Message\ServerRequestInterface;
 use yii\base\Action;
-use yii\base\InvalidConfigException;
-use yii\di\NotInstantiableException;
 
 /**
  * Class PsrAction
@@ -22,37 +18,12 @@ class PsrAction extends Action
     /**
      * @inheritDoc
      *
-     * @throws InvalidConfigException|NotInstantiableException
+     * @param ServerRequestInterface $request
      */
-    public function init(): void
+    public function __construct($id, $controller, ServerRequestInterface $request, $config = [])
     {
-        parent::init();
+        parent::__construct($id, $controller, $config);
 
-        $this->request = $this->createServerRequest();
-    }
-
-    /**
-     * @return ServerRequestInterface
-     * @throws InvalidConfigException|NotInstantiableException
-     */
-    protected function createServerRequest(): ServerRequestInterface
-    {
-        $server = ServerRequestFactory::normalizeServer($_SERVER);
-        $files = ServerRequestFactory::normalizeFiles($_FILES);
-        $headers = ServerRequestFactory::marshalHeaders($server);
-
-        $request = Yii::$container->get(ServerRequestInterface::class, [
-            $server,
-            $files,
-            ServerRequestFactory::marshalUriFromServer($server, $headers),
-            ServerRequestFactory::get('REQUEST_METHOD', $server, 'GET'),
-            'php://input',
-            $headers
-        ]);
-
-        return $request
-            ->withCookieParams($_COOKIE)
-            ->withQueryParams($_GET)
-            ->withParsedBody($_POST);
+        $this->request = $request;
     }
 }

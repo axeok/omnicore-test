@@ -3,6 +3,7 @@
 namespace app\controllers\page;
 
 use app\components\{DtoFactory, PsrAction};
+use Psr\Http\Message\ServerRequestInterface;
 use Yii;
 use UserDto;
 use yii\base\{DynamicModel, InvalidConfigException};
@@ -22,6 +23,21 @@ class ValidateAction extends PsrAction
 
     /** @var array */
     protected array $errors = [];
+
+    /** @var DtoFactory */
+    protected DtoFactory $factory;
+
+    /**
+     * @inheritDoc
+     *
+     * @param DtoFactory $factory
+     */
+    public function __construct($id, $controller, ServerRequestInterface $request, DtoFactory $factory, $config = [])
+    {
+        parent::__construct($id, $controller, $request, $config);
+
+        $this->factory = $factory;
+    }
 
     /**
      * @inheritDoc
@@ -53,9 +69,7 @@ class ValidateAction extends PsrAction
      */
     protected function createDto()
     {
-        $factory = Yii::$container->get(DtoFactory::class);
-
-        return $factory->constructDto($this->request, self::FIELDS_MAP);
+        return $this->factory->constructDto($this->request, self::FIELDS_MAP);
     }
 
     /**

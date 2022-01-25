@@ -2,7 +2,7 @@
 
 use app\components\{DtoObject, DtoFactory};
 use Psr\Http\Message\ServerRequestInterface;
-use Phly\Http\ServerRequest;
+use Phly\Http\ServerRequestFactory;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
@@ -23,9 +23,15 @@ $config = [
             DtoFactory::class => [
                 'class' => DtoFactory::class,
             ],
-            ServerRequestInterface::class => [
-                'class' => ServerRequest::class,
-            ],
+            ServerRequestInterface::class => function () {
+                return ServerRequestFactory::fromGlobals(
+                    $_SERVER,
+                    $_GET,
+                    $_POST,
+                    $_COOKIE,
+                    $_FILES
+                );
+            }
         ],
     ],
     'components' => [
