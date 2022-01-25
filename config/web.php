@@ -1,5 +1,9 @@
 <?php
 
+use app\components\{DtoObject, DtoFactory};
+use Psr\Http\Message\ServerRequestInterface;
+use Phly\Http\ServerRequest;
+
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
@@ -10,6 +14,19 @@ $config = [
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm' => '@vendor/npm-asset',
+    ],
+    'container' => [
+        'definitions' => [
+            'dto' => [
+                'class' => DtoObject::class,
+            ],
+            DtoFactory::class => [
+                'class' => DtoFactory::class,
+            ],
+            ServerRequestInterface::class => [
+                'class' => ServerRequest::class,
+            ],
+        ],
     ],
     'components' => [
         'request' => [

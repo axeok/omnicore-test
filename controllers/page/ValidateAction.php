@@ -5,8 +5,7 @@ namespace app\controllers\page;
 use app\components\{DtoFactory, PsrAction};
 use Yii;
 use UserDto;
-use yii\base\DynamicModel;
-use yii\base\InvalidConfigException;
+use yii\base\{DynamicModel, InvalidConfigException};
 use ReflectionException;
 
 /**
@@ -16,14 +15,23 @@ use ReflectionException;
  */
 class ValidateAction extends PsrAction
 {
-    /** @var string */
-    protected const DTO_CLASS = UserDto::class;
-
-    /** @var UserDto */
-    protected $dto;
+    /** @var string[] */
+    protected const FIELDS_MAP = [
+        'email' => 'emailAddress',
+    ];
 
     /** @var array */
     protected array $errors = [];
+
+    /**
+     * @inheritDoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        Yii::$container->set('dto', UserDto::class);
+    }
 
     /**
      * @return array
@@ -40,21 +48,14 @@ class ValidateAction extends PsrAction
     }
 
     /**
-     * @return UserDto
-     * @throws InvalidConfigException
-     * @throws ReflectionException
+     * @return mixed
+     * @throws InvalidConfigException|ReflectionException
      */
-    protected function createDto(): UserDto
+    protected function createDto()
     {
-        $factory = Yii::createObject([
-            'class' => DtoFactory::class,
-            'dtoClass' => self::DTO_CLASS,
-            'dtoFieldsMap' => [
-                'email' => 'emailAddress',
-            ]
-        ]);
+        $factory = Yii::$container->get(DtoFactory::class);
 
-        return $factory->constructDto($this->request);
+        return $factory->constructDto($this->request, self::FIELDS_MAP);
     }
 
     /**
@@ -86,7 +87,7 @@ class ValidateAction extends PsrAction
     protected function setHttpStatus(): void
     {
         if (!empty($this->errors)) {
-            Yii::$app->response->setStatusCode(400);
+            Yii::$app->response->setStatusCode(422);
         }
     }
 }

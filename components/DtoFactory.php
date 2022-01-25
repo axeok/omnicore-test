@@ -6,35 +6,31 @@ use Yii;
 use ReflectionClass;
 use ReflectionException;
 use Psr\Http\Message\RequestInterface;
-use yii\base\{Component, InvalidConfigException};
 use yii\helpers\ArrayHelper;
+use yii\base\InvalidConfigException;
+use yii\di\NotInstantiableException;
 
 /**
  * Class DtoFactory
  *
  * @package app\components
  */
-class DtoFactory extends Component
+class DtoFactory
 {
-    /** @var string */
-    public $dtoClass;
-
-    /** @var array */
-    public $dtoFieldsMap = [];
-
     /**
      * @param RequestInterface $request
+     * @param array $fieldsMap
      *
      * @return mixed
-     * @throws InvalidConfigException|ReflectionException
+     * @throws ReflectionException|InvalidConfigException|NotInstantiableException
      */
-    public function constructDto(RequestInterface $request)
+    public function constructDto(RequestInterface $request, array $fieldsMap = [])
     {
-        $dto = Yii::createObject($this->dtoClass);
-
         $data = $this->getRequestData($request);
 
-        $this->setDataToDto($data, $dto);
+        $dto = Yii::$container->get('dto');
+
+        $this->setDataToDto($data, $dto, $fieldsMap);
 
         return $dto;
     }
@@ -52,17 +48,18 @@ class DtoFactory extends Component
     /**
      * @param array $data
      * @param $dto
+     * @param array $fieldsMap
      *
      * @return void
      * @throws ReflectionException
      */
-    protected function setDataToDto(array $data, $dto): void
+    protected function setDataToDto(array $data, $dto, array $fieldsMap): void
     {
         $reflection = new ReflectionClass($dto);
         $properties = ArrayHelper::getColumn($reflection->getProperties(), 'name');
 
         foreach ($data as $key => $value) {
-            $field = $this->dtoFieldsMap[$key] ?? $key;
+            $field = $fieldsMap[$key] ?? $key;
 
             if (!in_array($field, $properties)) {
                 continue;
